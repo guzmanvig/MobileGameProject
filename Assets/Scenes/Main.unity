@@ -299,7 +299,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eaea7a899a73a404ead87ecad82636b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spriteRenderer: {fileID: 0}
+  spriteRenderer: {fileID: 601875958}
 --- !u!60 &601875960
 PolygonCollider2D:
   m_ObjectHideFlags: 0
