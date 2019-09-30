@@ -8,6 +8,10 @@ TagManager:
   - counterClockWise
   - circle
   - ball
+  - type1
+  - type2
+  - typeNeutral
+  - typeNeutral2
   layers:
   - Default
   - TransparentFX

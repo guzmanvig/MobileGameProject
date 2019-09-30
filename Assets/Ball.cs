@@ -36,6 +36,13 @@ public class Ball : MonoBehaviour
     private void RandomColor()
     {
         int randomIndex = Random.Range(0, 2);
+        if (randomIndex == 0)
+        {
+            this.tag = "type1";
+        } else
+        {
+            this.tag = "type2";
+        }
         myColor = possibleColors[randomIndex];
         spriteRenderer.color = myColor;
     }

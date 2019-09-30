@@ -60,8 +60,6 @@ public class Spawner : MonoBehaviour
         ballInstance.transform.localScale = new Vector3(randomScale, randomScale, 1f);
 
         transform.Rotate(0f, 0f, -angleFromCenter);
-
-
     }
 
 
