@@ -35,8 +35,11 @@ public class CircleController : MonoBehaviour {
         rotate = true;
     }
 
-    public void StopRotation() {
-        rotate = false;
+    public void StopRotation(bool clockwise) {
+        // Only stop if its the current rotation
+        if ((rotateClockwise && clockwise) || (!rotateClockwise && !clockwise)) {
+            rotate = false;
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision) {

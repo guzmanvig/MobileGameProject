@@ -1,19 +1,22 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class RotateButton : MonoBehaviour
-{
+public class RotateButton : EventTrigger {
     public CircleController circle;
 
-    private void OnMouseDown()
-    {
+    void Start() {
+        circle = GameObject.FindWithTag("circle").GetComponent<CircleController>();
+    }
+
+
+    public override void OnPointerDown(PointerEventData data) {
         circle.StartRotation(tag == "clockWise");
     }
 
-    private void OnMouseUp()
-    {
-        circle.StopRotation();
+    public override void OnPointerUp(PointerEventData data) {
+        circle.StopRotation(tag == "clockWise");
     }
 
 
