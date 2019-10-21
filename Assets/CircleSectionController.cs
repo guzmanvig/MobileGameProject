@@ -26,8 +26,6 @@ public class CircleSectionController : MonoBehaviour {
     private Vector2Int center;
 
     private bool paintTransparent;
-
-
     void Start() {
 
         startAngle = new Angle(startAngleValue);
@@ -74,7 +72,7 @@ public class CircleSectionController : MonoBehaviour {
                 Angle nextAngle = startAngle.decreaseBy(angleDecreaseIncreaseStep);
                 float differenceInAngles = nextAngle.value - targetStartAngle.value;
                 // Last check is to solve when passing from 0 to 360
-                if ((differenceInAngles < 0) && !(Mathf.Abs(differenceInAngles) > angleDecreaseIncreaseStep)) {
+                if ((differenceInAngles < 0) || (Mathf.Abs(differenceInAngles) > angleDecreaseIncreaseStep)) {
                     nextAngle = targetStartAngle;
                 }
 
@@ -87,7 +85,7 @@ public class CircleSectionController : MonoBehaviour {
                 Angle nextAngle = endAngle.increaseBy(angleDecreaseIncreaseStep);
                 float differenceInAngles = nextAngle.value - targetEndAngle.value;
                 // Last check is to solve when passing from 360 to 0
-                if ((differenceInAngles > 0) && !(Mathf.Abs(differenceInAngles) > angleDecreaseIncreaseStep)) {
+                if ((differenceInAngles > 0) || (Mathf.Abs(differenceInAngles) > angleDecreaseIncreaseStep)) {
                     nextAngle = targetEndAngle;
                 }
 
@@ -103,7 +101,7 @@ public class CircleSectionController : MonoBehaviour {
                 Angle nextAngle = startAngle.increaseBy(angleDecreaseIncreaseStep);
                 float differenceInAngles = nextAngle.value - targetStartAngle.value;
                 // Last check is to solve when passing from 0 to 360
-                if ((differenceInAngles > 0) && !(Mathf.Abs(differenceInAngles) > angleDecreaseIncreaseStep)) {
+                if ((differenceInAngles > 0) || (Mathf.Abs(differenceInAngles) > angleDecreaseIncreaseStep)) {
                     nextAngle = targetStartAngle;
                 }
 
@@ -116,7 +114,7 @@ public class CircleSectionController : MonoBehaviour {
                 Angle nextAngle = endAngle.decreaseBy(angleDecreaseIncreaseStep);
                 float differenceInAngles = nextAngle.value - targetEndAngle.value;
                 // Last check is to solve when passing from 360 to 0
-                if ((differenceInAngles < 0) && !(Mathf.Abs(differenceInAngles) > angleDecreaseIncreaseStep)) {
+                if ((differenceInAngles < 0) || (Mathf.Abs(differenceInAngles) > angleDecreaseIncreaseStep)) {
                     nextAngle = targetEndAngle;
                 }
 
