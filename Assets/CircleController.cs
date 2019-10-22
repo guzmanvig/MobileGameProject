@@ -112,23 +112,22 @@ public class CircleController : MonoBehaviour {
     }
 
     private void resizeNeighborSections(CircleSectionController section, float angle) {
-        CircleSectionController previousSection;
-        CircleSectionController nextSection;
-        if (circleSections.IndexOf(section) == 0) {
-            previousSection = circleSections[circleSections.Capacity - 1];
-            nextSection = circleSections[circleSections.IndexOf(section) + 1];
-        } else if (circleSections.IndexOf(section) == circleSections.Capacity - 1) {
-            previousSection = circleSections[circleSections.IndexOf(section) - 1];
-            nextSection = circleSections[0];
-        } else { 
-            previousSection = circleSections[circleSections.IndexOf(section) - 1];
-            nextSection = circleSections[circleSections.IndexOf(section) + 1];
+        CircleSectionController previousSection = getPreviousSection(section);
+        if (previousSection.isAtMinimum()) {
+            // If this is already at minimum, skip it
+            previousSection = getPreviousSection(previousSection);
+        }
+        CircleSectionController nextSection = getNextSection(section);
+        if (nextSection.isAtMinimum()) {
+            // If this is already at minimum, skip it
+            nextSection = getNextSection(nextSection);
         }
         bool previousReachedMinimum = decreaseSection(previousSection, angle, false);
         bool nextReachedMinimum = decreaseSection(nextSection, angle, true);
         if (previousReachedMinimum) {
            if (previousSection.tag == "typeNeutral") {
                 if (nextReachedMinimum) {
+                    // Both neutral sections are gone. This needs to be changed if more than 2 neutrals
                     Debug.Log("WON!");
                     winText.SetActive(true);
                 }
@@ -140,6 +139,7 @@ public class CircleController : MonoBehaviour {
         if (nextReachedMinimum) {
             if (nextSection.tag == "typeNeutral") {
                 if (previousReachedMinimum) {
+                    // Both neutral sections are gone. This needs to be changed if more than 2 neutrals
                     winText.SetActive(true);
                     Debug.Log("WON!");
                 }
@@ -148,6 +148,29 @@ public class CircleController : MonoBehaviour {
                 Debug.Log("LOST!");
             }
         }
+    }
 
+    private CircleSectionController getNextSection(CircleSectionController section) {
+        CircleSectionController nextSection;
+        if (circleSections.IndexOf(section) == 0) {
+            nextSection = circleSections[circleSections.IndexOf(section) + 1];
+        } else if (circleSections.IndexOf(section) == circleSections.Capacity - 1) {
+            nextSection = circleSections[0];
+        } else {
+            nextSection = circleSections[circleSections.IndexOf(section) + 1];
+        }
+        return nextSection;
+    }
+
+    private CircleSectionController getPreviousSection(CircleSectionController section) {
+        CircleSectionController previousSection;
+        if (circleSections.IndexOf(section) == 0) {
+            previousSection = circleSections[circleSections.Capacity - 1];
+        } else if (circleSections.IndexOf(section) == circleSections.Capacity - 1) {
+            previousSection = circleSections[circleSections.IndexOf(section) - 1];
+        } else {
+            previousSection = circleSections[circleSections.IndexOf(section) - 1];
+        }
+        return previousSection;
     }
 }

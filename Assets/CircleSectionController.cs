@@ -28,6 +28,11 @@ public class CircleSectionController : MonoBehaviour {
     private Vector2Int center;
 
     private bool paintTransparent;
+
+    bool reachedMinimumAngle = false;
+    bool reachedMaximumAngle = false;
+
+
     void Start() {
 
         startAngle = new Angle(startAngleValue);
@@ -162,15 +167,24 @@ public class CircleSectionController : MonoBehaviour {
 
     public bool increaseAngleBy(float angleToIncrease) {
         paintTransparent = false;
-        bool reachedMaximumAngle = false;
         float maxAngleToIncrease = 360 - getTotalCurrentAngle();
-        if (angleToIncrease > maxAngleToIncrease) {
-            angleToIncrease = maxAngleToIncrease;
-            reachedMaximumAngle = true;
+        if (maxAngleToIncrease != 0) {
+            if (angleToIncrease > maxAngleToIncrease) {
+                angleToIncrease = maxAngleToIncrease;
+                reachedMaximumAngle = true;
+            }
+            targetStartAngle = startAngle.decreaseBy(angleToIncrease / 2);
+            targetEndAngle = endAngle.increaseBy(angleToIncrease / 2);
         }
-        targetStartAngle = startAngle.decreaseBy(angleToIncrease / 2);
-        targetEndAngle = endAngle.increaseBy(angleToIncrease / 2);
         return reachedMaximumAngle;
+    }
+
+    public bool isAtMaximum() {
+        return reachedMaximumAngle;
+    }
+
+    public bool isAtMinimum() {
+        return reachedMinimumAngle;
     }
 
     private float getTotalCurrentAngle() {
@@ -183,7 +197,6 @@ public class CircleSectionController : MonoBehaviour {
 
     public bool decreaseAngleBy(float angleToDecrease, bool reduceFromStart) {
         paintTransparent = true;
-        bool reachedMinimumAngle = false;
         float maxAngleToDecrease = getTotalCurrentAngle();
         if (maxAngleToDecrease != 0) {
 
@@ -200,12 +213,8 @@ public class CircleSectionController : MonoBehaviour {
                 Debug.Log("End angle: " + endAngle.value + " will be decreased by : " + angleToDecrease);
                 targetEndAngle = endAngle.decreaseBy(angleToDecrease);
             }
-
-            return reachedMinimumAngle;
-
-        } else {
-            return true;
         }
+        return reachedMinimumAngle;
         
     }
 
