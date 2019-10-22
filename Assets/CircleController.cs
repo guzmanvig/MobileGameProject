@@ -7,6 +7,7 @@ public class CircleController : MonoBehaviour {
     public float speed = 100f; //100 degrees per second
     public bool rotateClockwise;
     public bool rotate = false;
+    public GameObject winText;
 
     List<CircleSectionController> circleSections = new List<CircleSectionController>();
 
@@ -84,6 +85,7 @@ public class CircleController : MonoBehaviour {
         float expandBy = ballSize * 20;
         if (collision.tag == sectionHit.tag) {
             Debug.Log("Hit correct section");
+            //TODO: increase both sides only if there is a not complete neighbor section, if not, only resize  the other neighbor
             increaseSection(sectionHit, expandBy);
             resizeNeighborSections(sectionHit, expandBy / 2);
         } else if (sectionHit.tag == "typeNeutral") {
@@ -99,26 +101,53 @@ public class CircleController : MonoBehaviour {
 
     }
 
-    private void decreaseSection(CircleSectionController section, float angle, bool fromStart) {
+    private bool decreaseSection(CircleSectionController section, float angle, bool fromStart) {
         Debug.Log("Decreaseing angle by: " + angle + " from start: " + fromStart);
-        section.decreaseAngleBy(angle, fromStart);
+        return section.decreaseAngleBy(angle, fromStart);
     }
 
-    private void increaseSection(CircleSectionController section, float angle) {
+    private bool increaseSection(CircleSectionController section, float angle) {
         Debug.Log("Increasing angle by: " + angle);
-        section.increaseAngleBy(angle);
+        return section.increaseAngleBy(angle);
     }
 
     private void resizeNeighborSections(CircleSectionController section, float angle) {
+        CircleSectionController previousSection;
+        CircleSectionController nextSection;
         if (circleSections.IndexOf(section) == 0) {
-            decreaseSection(circleSections[circleSections.Capacity - 1], angle, false);
-            decreaseSection(circleSections[circleSections.IndexOf(section) + 1], angle, true);
+            previousSection = circleSections[circleSections.Capacity - 1];
+            nextSection = circleSections[circleSections.IndexOf(section) + 1];
         } else if (circleSections.IndexOf(section) == circleSections.Capacity - 1) {
-            decreaseSection(circleSections[circleSections.IndexOf(section) - 1], angle, false);
-            decreaseSection(circleSections[0], angle, true);
-        } else {
-            decreaseSection(circleSections[circleSections.IndexOf(section) - 1], angle, false);
-            decreaseSection(circleSections[circleSections.IndexOf(section) + 1], angle, true);
+            previousSection = circleSections[circleSections.IndexOf(section) - 1];
+            nextSection = circleSections[0];
+        } else { 
+            previousSection = circleSections[circleSections.IndexOf(section) - 1];
+            nextSection = circleSections[circleSections.IndexOf(section) + 1];
         }
+        bool previousReachedMinimum = decreaseSection(previousSection, angle, false);
+        bool nextReachedMinimum = decreaseSection(nextSection, angle, true);
+        if (previousReachedMinimum) {
+           if (previousSection.tag == "typeNeutral") {
+                if (nextReachedMinimum) {
+                    Debug.Log("WON!");
+                    winText.SetActive(true);
+                }
+            } else {
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                Debug.Log("LOST!");
+            }
+        }
+        if (nextReachedMinimum) {
+            if (nextSection.tag == "typeNeutral") {
+                if (previousReachedMinimum) {
+                    winText.SetActive(true);
+                    Debug.Log("WON!");
+                }
+            } else {
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                Debug.Log("LOST!");
+            }
+        }
+
     }
 }

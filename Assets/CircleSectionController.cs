@@ -12,6 +12,8 @@ public class CircleSectionController : MonoBehaviour {
     private Angle targetEndAngle;
 
     private float angleDecreaseIncreaseStep = 1f;
+    private float decreaseIncreaseDelay = 0.05f;
+    private float nextTimeToIncreaseDecrese;
 
     private SpriteRenderer sr;
 
@@ -65,30 +67,25 @@ public class CircleSectionController : MonoBehaviour {
 
     void Update() {
 
+        if (nextTimeToIncreaseDecrese <= Time.time) {
+            animatePainting();
+            nextTimeToIncreaseDecrese = Time.time + decreaseIncreaseDelay;
+        }
+    }
+
+    private void animatePainting() {
         if (!paintTransparent) {
             // Increaseing angle
 
             if (startAngle.value != targetStartAngle.value) {
-                Angle nextAngle = startAngle.decreaseBy(angleDecreaseIncreaseStep);
-                float differenceInAngles = nextAngle.value - targetStartAngle.value;
-                // Last check is to solve when passing from 0 to 360
-                if ((differenceInAngles < 0) || (Mathf.Abs(differenceInAngles) > angleDecreaseIncreaseStep)) {
-                    nextAngle = targetStartAngle;
-                }
-
+                Angle nextAngle = decreaseAndGetNextAngle(startAngle, targetStartAngle);
                 Angle paintUpTo = startAngle.increaseBy(1); // The + 1 is to avoid border pixel not painted issues
                 paintArc(sr.sprite.texture, nextAngle.value, paintUpTo.value);
                 startAngle = nextAngle;
             }
 
             if (endAngle.value != targetEndAngle.value) {
-                Angle nextAngle = endAngle.increaseBy(angleDecreaseIncreaseStep);
-                float differenceInAngles = nextAngle.value - targetEndAngle.value;
-                // Last check is to solve when passing from 360 to 0
-                if ((differenceInAngles > 0) || (Mathf.Abs(differenceInAngles) > angleDecreaseIncreaseStep)) {
-                    nextAngle = targetEndAngle;
-                }
-
+                Angle nextAngle = increaseAndGetNextAngle(endAngle, targetEndAngle);
                 Angle paintUpTo = endAngle.decreaseBy(1); // The - 1 is to avoid border pixel not painted issues
                 paintArc(sr.sprite.texture, paintUpTo.value, nextAngle.value);
                 endAngle = nextAngle;
@@ -96,35 +93,70 @@ public class CircleSectionController : MonoBehaviour {
 
         } else {
             // Decrease angle
-
             if (startAngle.value != targetStartAngle.value) {
-                Angle nextAngle = startAngle.increaseBy(angleDecreaseIncreaseStep);
-                float differenceInAngles = nextAngle.value - targetStartAngle.value;
-                // Last check is to solve when passing from 0 to 360
-                if ((differenceInAngles > 0) || (Mathf.Abs(differenceInAngles) > angleDecreaseIncreaseStep)) {
-                    nextAngle = targetStartAngle;
-                }
-
+                Angle nextAngle = increaseAndGetNextAngle(startAngle, targetStartAngle);   
                 Angle paintUpTo = startAngle.decreaseBy(1); // The  -1 is to avoid border pixel not painted issues
                 paintArc(sr.sprite.texture, paintUpTo.value, nextAngle.value);
                 startAngle = nextAngle;
             }
-
             if (endAngle.value != targetEndAngle.value) {
-                Angle nextAngle = endAngle.decreaseBy(angleDecreaseIncreaseStep);
-                float differenceInAngles = nextAngle.value - targetEndAngle.value;
-                // Last check is to solve when passing from 360 to 0
-                if ((differenceInAngles < 0) || (Mathf.Abs(differenceInAngles) > angleDecreaseIncreaseStep)) {
-                    nextAngle = targetEndAngle;
-                }
-
+                Angle nextAngle = decreaseAndGetNextAngle(endAngle, targetEndAngle);
                 Angle paintUpTo = endAngle.increaseBy(1); // The + 1 is to avoid border pixel not painted issues
                 paintArc(sr.sprite.texture, nextAngle.value, paintUpTo.value);
                 endAngle = nextAngle;
             }
 
         }
+    }
 
+    private Angle increaseAndGetNextAngle(Angle angleToIncrease, Angle targetAngle) {
+        Angle nextAngle = angleToIncrease.increaseBy(angleDecreaseIncreaseStep);
+        float differenceInAngles = nextAngle.value - targetAngle.value;
+        // Border case, the target or the next may be in the first quarter
+        if (angleToIncrease.getQuarter() == 3) {
+            if (targetAngle.getQuarter() == 0) {
+                if (differenceInAngles > 0 && (Mathf.Abs(differenceInAngles) < 90)) {
+                    nextAngle = targetAngle;
+                }
+            } else {
+                if (nextAngle.getQuarter() == 0) {
+                    nextAngle = targetAngle;
+                } else if (differenceInAngles > 0) {
+                    nextAngle = targetAngle;
+                }
+            }
+            // Normal case
+        } else {
+            if (differenceInAngles > 0) {
+                nextAngle = targetAngle;
+            }
+        }
+        return nextAngle;
+    }
+
+    private Angle decreaseAndGetNextAngle(Angle angleToDecrease, Angle targetAngle) {
+        Angle nextAngle = angleToDecrease.decreaseBy(angleDecreaseIncreaseStep);
+        float differenceInAngles = nextAngle.value - targetAngle.value;
+        // Border case, the target or the next may be in the last quarter
+        if (angleToDecrease.getQuarter() == 0) {
+            if (targetAngle.getQuarter() == 3) {
+                if (differenceInAngles < 0 && (Mathf.Abs(differenceInAngles) < 90)) {
+                    nextAngle = targetAngle;
+                }
+            } else {
+                if (nextAngle.getQuarter() == 3) {
+                    nextAngle = targetAngle;
+                } else if (differenceInAngles < 0) {
+                    nextAngle = targetAngle;
+                }
+            }
+            // Normal case
+        } else {
+            if (differenceInAngles < 0) {
+                nextAngle = targetAngle;
+            }
+        }
+        return nextAngle;
     }
 
 
@@ -153,21 +185,28 @@ public class CircleSectionController : MonoBehaviour {
         paintTransparent = true;
         bool reachedMinimumAngle = false;
         float maxAngleToDecrease = getTotalCurrentAngle();
-        if (angleToDecrease > maxAngleToDecrease) {
-            angleToDecrease = maxAngleToDecrease;
-            reachedMinimumAngle = true;
-            Debug.Log("Reached minimum angle");
-        }
+        if (maxAngleToDecrease != 0) {
 
-        if (reduceFromStart) {
-            Debug.Log("Start angle: " + startAngle.value + " will be increased by : " +angleToDecrease);
-            targetStartAngle = startAngle.increaseBy(angleToDecrease);
+            if (angleToDecrease > maxAngleToDecrease) {
+                angleToDecrease = maxAngleToDecrease;
+                reachedMinimumAngle = true;
+                Debug.Log("Reached minimum angle");
+            }
+
+            if (reduceFromStart) {
+                Debug.Log("Start angle: " + startAngle.value + " will be increased by : " + angleToDecrease);
+                targetStartAngle = startAngle.increaseBy(angleToDecrease);
+            } else {
+                Debug.Log("End angle: " + endAngle.value + " will be decreased by : " + angleToDecrease);
+                targetEndAngle = endAngle.decreaseBy(angleToDecrease);
+            }
+
+            return reachedMinimumAngle;
+
         } else {
-            Debug.Log("End angle: " + endAngle.value + " will be decreased by : " + angleToDecrease);
-            targetEndAngle = endAngle.decreaseBy(angleToDecrease);
+            return true;
         }
-
-        return reachedMinimumAngle;
+        
     }
 
     private void paintArc(Texture2D texture, float startAngle, float endAngle) {
@@ -367,6 +406,18 @@ public class CircleSectionController : MonoBehaviour {
         public Angle decreaseBy(float decreaseAmount) {
             float newAngle = value - decreaseAmount;
             return new Angle(newAngle);
+        }
+
+        public int getQuarter() {
+            if (value >= 0 && value < 90) {
+                return 0;
+            } else if (value >= 90 && value < 180) {
+                return 1;
+            } else if (value >= 180 && value < 270) {
+                return 2;
+            } else {
+                return 3;
+            }
         }
 
     }
