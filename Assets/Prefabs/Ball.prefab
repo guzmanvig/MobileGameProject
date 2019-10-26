@@ -116,7 +116,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87df9c58acf2fad49bf541c76fe6c437, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 2.8
+  speed: 3
   possibleColor1: {r: 0, g: 0, b: 1, a: 1}
   possibleColor2: {r: 1, g: 0, b: 0, a: 1}
   spriteRenderer: {fileID: 2993868067670847427}

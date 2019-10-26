@@ -5,7 +5,7 @@ using UnityEngine;
 public class Ball : MonoBehaviour
 {
 
-    private float speed = 2.8f;
+    public float speed = 2.8f;
     public Color possibleColor1;
     public Color possibleColor2;
     public SpriteRenderer spriteRenderer;

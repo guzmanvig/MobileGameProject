@@ -9,7 +9,10 @@ public class CircleController : MonoBehaviour {
     public bool rotate = false;
     public GameObject winText;
 
-    List<CircleSectionController> circleSections = new List<CircleSectionController>();
+    List<CircleSectionController> allCircleSections = new List<CircleSectionController>();
+    List<CircleSectionController> neutralSections = new List<CircleSectionController>();
+    List<CircleSectionController> nonNeutralSections = new List<CircleSectionController>();
+
 
 
     // Start is called before the first frame update
@@ -17,7 +20,12 @@ public class CircleController : MonoBehaviour {
         for (int i = 0; i < gameObject.transform.childCount; i++) {
             GameObject circleComponent = gameObject.transform.GetChild(i).gameObject;
             CircleSectionController section = circleComponent.GetComponent<CircleSectionController>();
-            circleSections.Add(section);
+            allCircleSections.Add(section);
+            if (section.tag == "typeNeutral") {
+                neutralSections.Add(section);
+            } else {
+                nonNeutralSections.Add(section);
+            }
         }
 
     }
@@ -62,7 +70,7 @@ public class CircleController : MonoBehaviour {
         }
 
         CircleSectionController sectionHit = null;
-        foreach (CircleSectionController circleSection in circleSections) {
+        foreach (CircleSectionController circleSection in allCircleSections) {
             float sectionStartAngle = circleSection.getStartAngle();
             float sectionEndAngle = circleSection.getEndAngle();
             if (sectionStartAngle <= sectionEndAngle) {
@@ -85,7 +93,6 @@ public class CircleController : MonoBehaviour {
         float expandBy = ballSize * 20;
         if (collision.tag == sectionHit.tag) {
             Debug.Log("Hit correct section");
-            //TODO: increase both sides only if there is a not complete neighbor section, if not, only resize  the other neighbor
             increaseSection(sectionHit, expandBy);
             resizeNeighborSections(sectionHit, expandBy / 2);
         } else if (sectionHit.tag == "typeNeutral") {
@@ -101,14 +108,14 @@ public class CircleController : MonoBehaviour {
 
     }
 
-    private bool decreaseSection(CircleSectionController section, float angle, bool fromStart) {
+    private void decreaseSection(CircleSectionController section, float angle, bool fromStart) {
         Debug.Log("Decreaseing angle by: " + angle + " from start: " + fromStart);
-        return section.decreaseAngleBy(angle, fromStart);
+        section.decreaseAngleBy(angle, fromStart);
     }
 
-    private bool increaseSection(CircleSectionController section, float angle) {
+    private void increaseSection(CircleSectionController section, float angle) {
         Debug.Log("Increasing angle by: " + angle);
-        return section.increaseAngleBy(angle);
+        section.increaseAngleBy(angle);
     }
 
     private void resizeNeighborSections(CircleSectionController section, float angle) {
@@ -122,54 +129,60 @@ public class CircleController : MonoBehaviour {
             // If this is already at minimum, skip it
             nextSection = getNextSection(nextSection);
         }
-        bool previousReachedMinimum = decreaseSection(previousSection, angle, false);
-        bool nextReachedMinimum = decreaseSection(nextSection, angle, true);
-        if (previousReachedMinimum) {
-           if (previousSection.tag == "typeNeutral") {
-                if (nextReachedMinimum) {
-                    // Both neutral sections are gone. This needs to be changed if more than 2 neutrals
-                    Debug.Log("WON!");
-                    winText.SetActive(true);
-                }
-            } else {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-                Debug.Log("LOST!");
+        decreaseSection(previousSection, angle, false);
+        decreaseSection(nextSection, angle, true);
+
+        if (checkNonNeutralAtMinimum()) {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            Debug.Log("LOST!");
+        } else if (checkAllNeutralAtMinimum()) {
+            Debug.Log("WON!");
+            winText.SetActive(true);
+        }
+    }
+
+    private bool checkNonNeutralAtMinimum() {
+        bool oneAtMinimum = false;
+        foreach (CircleSectionController section in nonNeutralSections) {
+            if (section.isAtMinimum()) {
+                oneAtMinimum = true;
+                break;
             }
         }
-        if (nextReachedMinimum) {
-            if (nextSection.tag == "typeNeutral") {
-                if (previousReachedMinimum) {
-                    // Both neutral sections are gone. This needs to be changed if more than 2 neutrals
-                    winText.SetActive(true);
-                    Debug.Log("WON!");
-                }
-            } else {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-                Debug.Log("LOST!");
+        return oneAtMinimum;
+    }
+
+    private bool checkAllNeutralAtMinimum() {
+        bool oneNotAtMinimum = true;
+        foreach (CircleSectionController section in neutralSections) {
+            if (!section.isAtMinimum()) {
+                oneNotAtMinimum = false;
+                break;
             }
         }
+        return oneNotAtMinimum;
     }
 
     private CircleSectionController getNextSection(CircleSectionController section) {
         CircleSectionController nextSection;
-        if (circleSections.IndexOf(section) == 0) {
-            nextSection = circleSections[circleSections.IndexOf(section) + 1];
-        } else if (circleSections.IndexOf(section) == circleSections.Capacity - 1) {
-            nextSection = circleSections[0];
+        if (allCircleSections.IndexOf(section) == 0) {
+            nextSection = allCircleSections[allCircleSections.IndexOf(section) + 1];
+        } else if (allCircleSections.IndexOf(section) == allCircleSections.Capacity - 1) {
+            nextSection = allCircleSections[0];
         } else {
-            nextSection = circleSections[circleSections.IndexOf(section) + 1];
+            nextSection = allCircleSections[allCircleSections.IndexOf(section) + 1];
         }
         return nextSection;
     }
 
     private CircleSectionController getPreviousSection(CircleSectionController section) {
         CircleSectionController previousSection;
-        if (circleSections.IndexOf(section) == 0) {
-            previousSection = circleSections[circleSections.Capacity - 1];
-        } else if (circleSections.IndexOf(section) == circleSections.Capacity - 1) {
-            previousSection = circleSections[circleSections.IndexOf(section) - 1];
+        if (allCircleSections.IndexOf(section) == 0) {
+            previousSection = allCircleSections[allCircleSections.Capacity - 1];
+        } else if (allCircleSections.IndexOf(section) == allCircleSections.Capacity - 1) {
+            previousSection = allCircleSections[allCircleSections.IndexOf(section) - 1];
         } else {
-            previousSection = circleSections[circleSections.IndexOf(section) - 1];
+            previousSection = allCircleSections[allCircleSections.IndexOf(section) - 1];
         }
         return previousSection;
     }

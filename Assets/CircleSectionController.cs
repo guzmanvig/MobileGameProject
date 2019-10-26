@@ -165,7 +165,7 @@ public class CircleSectionController : MonoBehaviour {
     }
 
 
-    public bool increaseAngleBy(float angleToIncrease) {
+    public void increaseAngleBy(float angleToIncrease) {
         paintTransparent = false;
         float maxAngleToIncrease = 360 - getTotalCurrentAngle();
         if (maxAngleToIncrease != 0) {
@@ -176,7 +176,6 @@ public class CircleSectionController : MonoBehaviour {
             targetStartAngle = startAngle.decreaseBy(angleToIncrease / 2);
             targetEndAngle = endAngle.increaseBy(angleToIncrease / 2);
         }
-        return reachedMaximumAngle;
     }
 
     public bool isAtMaximum() {
@@ -195,7 +194,7 @@ public class CircleSectionController : MonoBehaviour {
         }
     }
 
-    public bool decreaseAngleBy(float angleToDecrease, bool reduceFromStart) {
+    public void decreaseAngleBy(float angleToDecrease, bool reduceFromStart) {
         paintTransparent = true;
         float maxAngleToDecrease = getTotalCurrentAngle();
         if (maxAngleToDecrease != 0) {
@@ -213,9 +212,7 @@ public class CircleSectionController : MonoBehaviour {
                 Debug.Log("End angle: " + endAngle.value + " will be decreased by : " + angleToDecrease);
                 targetEndAngle = endAngle.decreaseBy(angleToDecrease);
             }
-        }
-        return reachedMinimumAngle;
-        
+        }        
     }
 
     private void paintArc(Texture2D texture, float startAngle, float endAngle) {
